@@ -5,26 +5,31 @@
 #include <limits>
 
 
+template<typename T>
+void printVector(const std::vector<T>& vector)
+{
+    std::cout << "[ ";
+    for (const auto& elem: vector)
+    {
+        std::cout << elem << " ";
+    }
+    std::cout << "]";
+};
+
+
 int main()
 {
-    std::vector<double> elements {
+    const std::vector<double> elements {
         0.6, 0.4, 0.1, 4.4, 0.6, 4.1, 1.4, 2.4, 4.1, 2.8
         };
 
-    auto printVector = [](const std::vector<double> vector)
     {
-        std::cout << "[ ";
-        for (const auto& elem: vector)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << "]";
-    };
+        std::cout << "elements=";
+        printVector(elements);
+        std::cout << std::endl;
+    }
 
-    printVector(elements);
-    std::cout << std::endl;
-
-    const auto [median_value, indices] = [&elements]()
+    const auto [median_value, indices] = [](const decltype(elements)& elements)
     {
         auto result = std::make_tuple(
             std::numeric_limits<double>::quiet_NaN(),
@@ -53,10 +58,7 @@ int main()
             }
         }
         return result;
-    }();
-
-    printVector(elements);
-    std::cout << std::endl;
+    }(elements);
 
     // ....... long code here .........
 
@@ -76,12 +78,9 @@ int main()
 
     {
         std::cout << "median_value=" << median_value << " ";
-        std::cout << "indices=[ ";
-        for (const auto& index: indices)
-        {
-            std::cout << index << " ";
-        }
-        std::cout << "]" << std::endl;
+        std::cout << "indices=";
+        printVector(indices);
+        std::cout << std::endl;
     }
 
     return 0;
