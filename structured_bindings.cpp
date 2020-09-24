@@ -20,7 +20,7 @@ void printVector(const std::vector<T>& vector)
 int main()
 {
     const std::vector<double> elements {
-        0.6, 0.4, 0.1, 4.4, 0.6, 4.1, 1.4, 2.4, 4.1, 2.8
+        1.2, 1.1, -0.1, -0.2, 0, 1
         };
 
     {
@@ -29,7 +29,8 @@ int main()
         std::cout << std::endl;
     }
 
-    const auto [median_value, indices] = [](const decltype(elements)& elements)
+
+    const auto [median_value, indices] = [](const std::vector<double>& elements)
     {
         auto result = std::make_tuple(
             std::numeric_limits<double>::quiet_NaN(),
@@ -39,22 +40,31 @@ int main()
 
         if (size > 0)
         {
-            auto elementsCopy = elements;
-            std::sort(elementsCopy.begin(), elementsCopy.end());
+            std::vector<std::pair<size_t, double> > enumeratedElements;
+            for (size_t index = 0; index < elements.size(); ++index)
+            {
+                enumeratedElements.emplace_back(index, elements[index]);
+            }
+            std::sort(enumeratedElements.begin(), enumeratedElements.end(),
+                [](auto a, auto b){ return a.second > b.second; });
 
             if (size % 2 == 0)
             {
                 std::vector<size_t> indices {size / 2 - 1, size / 2};
                 result = std::make_tuple(
-                    (elements[indices[0]] + elements[indices[1]]) / 2.0,
-                    indices);
+                    (enumeratedElements[indices[0]].second +
+                        enumeratedElements[indices[1]].second) / 2.0,
+                    std::vector<size_t> {
+                        enumeratedElements[indices[0]].first,
+                        enumeratedElements[indices[1]].first
+                        });
             }
             else
             {
                 std::vector<size_t> indices {size / 2};
                 result = std::make_tuple(
-                    elements[indices[0]],
-                    indices);
+                    enumeratedElements[indices[0]].second,
+                    std::vector<size_t> { enumeratedElements[indices[0]].first });
             }
         }
         return result;
