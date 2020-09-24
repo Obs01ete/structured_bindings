@@ -50,9 +50,21 @@ int main()
         std::cout << std::endl;
     }
 
-
+    // At this point we declare what we want - constant value variables
+    // "median_value" and indices. They are returned from the lambda and
+    // unpacked by means of a structured binding into separate variables
+    // right in the current scope.
+    // Please notice that we do not capture "elements" into lambda's
+    // capture list. A reference (&) capture list enables non-const access
+    // to the outer-scope "elements". If for some reason "elements" are
+    // declared non-const, lambda's body may by mistake modify its contents.
+    // Instead we pass elements as a const reference parameter.
     const auto [median_value, indices] = [](const std::vector<double>& elements)
     {
+        // Inside the lambda we allow ourselves some non-functional style by
+        // initializing the result variable with a default value which is
+        // a tuple of NaN and an empty list to account for possible
+        // empty input list.
         auto result = std::make_tuple(
             std::numeric_limits<double>::quiet_NaN(),
             std::vector<size_t>());
@@ -61,18 +73,27 @@ int main()
 
         if (size > 0)
         {
+            // To keep track of the indices which were used to calculate
+            // a median, we enumerate elements much alike in python.
             std::vector<std::pair<size_t, double> > enumeratedElements;
             for (size_t index = 0; index < elements.size(); ++index)
             {
                 enumeratedElements.emplace_back(index, elements[index]);
             }
+
+            // Now we are all set to sort the elements by values which
+            // are stored in "second" field of a tuple.
             std::sort(enumeratedElements.begin(), enumeratedElements.end(),
                 [](auto a, auto b){ return a.second > b.second; });
 
+            // A median is calculated out of a middle element of odd-sized
+            // lists and out of the two middle elements of an even-sized list.
             std::vector<size_t> indices = (size % 2 == 0) ?
                 std::vector<size_t>{size / 2 - 1, size / 2} :
                 std::vector<size_t>{size / 2};
 
+            // Let's disentangle indices and values back from the tuples
+            // that we are interested in.
             std::vector<size_t> originalIndices;
             std::vector<double> values;
             for (const auto& index : indices)
@@ -81,13 +102,16 @@ int main()
                 values.push_back(enumeratedElements[index].second);
             }
 
+            // Here we stick to the functional paradigm again to mean-reduce
+            // one or two values of interest.
             auto median = std::accumulate(values.begin(), values.end(), 0.0) /
                 values.size();
 
+            // And return a tuple to be unpacked with a structured binding.
             result = std::make_tuple(median, originalIndices);
         }
         return result;
-    }(elements);
+    }(elements); // Our lambda is one-time use, so just call it.
 
     // ....... long code here .........
 
@@ -95,7 +119,7 @@ int main()
     // but therefore overwrite the original values
 
     // median_value = 12.3; // Does not compile
-    // indices = {100, 200} // Does not compile
+    // indices = std::vector<size_t>{100, 200}; // Does not compile
 
     // Voila! Our fancy const structured bindings save us from a bug,
     // and this happens at compile stage, not after a couple of hours
@@ -103,9 +127,12 @@ int main()
 
     // ....... more code here .........
 
-    // At some point we again need the original "median_value".
+    // At some point we again need the original "median_value" or "indices".
+    // It is safe to assume that the values are never corrupted
+    // thanks to the const qualifier.
 
     {
+        // Print out the results.
         std::cout << "median_value=" << median_value << " ";
         std::cout << "indices=";
         printVector(indices);
