@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <limits>
+#include <numeric>
 
 
 template<typename T>
@@ -48,24 +49,22 @@ int main()
             std::sort(enumeratedElements.begin(), enumeratedElements.end(),
                 [](auto a, auto b){ return a.second > b.second; });
 
-            if (size % 2 == 0)
+            std::vector<size_t> indices = (size % 2 == 0) ?
+                std::vector<size_t>{size / 2 - 1, size / 2} :
+                std::vector<size_t>{size / 2};
+
+            std::vector<size_t> originalIndices;
+            std::vector<double> values;
+            for (const auto& index : indices)
             {
-                std::vector<size_t> indices {size / 2 - 1, size / 2};
-                result = std::make_tuple(
-                    (enumeratedElements[indices[0]].second +
-                        enumeratedElements[indices[1]].second) / 2.0,
-                    std::vector<size_t> {
-                        enumeratedElements[indices[0]].first,
-                        enumeratedElements[indices[1]].first
-                        });
+                originalIndices.push_back(enumeratedElements[index].first);
+                values.push_back(enumeratedElements[index].second);
             }
-            else
-            {
-                std::vector<size_t> indices {size / 2};
-                result = std::make_tuple(
-                    enumeratedElements[indices[0]].second,
-                    std::vector<size_t> { enumeratedElements[indices[0]].first });
-            }
+
+            auto median = std::accumulate(values.begin(), values.end(), 0.0) /
+                values.size();
+
+            result = std::make_tuple(median, originalIndices);
         }
         return result;
     }(elements);
