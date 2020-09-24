@@ -1,3 +1,13 @@
+// Tutorial on how to use structured bindings of C++17 to
+// write more functional style code.
+//
+// Dmitrii Khizbullin, 2020
+//
+// This example shows how to create a lambda, instantly call it,
+// return multiple values from it and unpack them as const-s
+// in the caller scope, thus protecting from occasional modification.
+
+
 #include <iostream>
 #include <tuple>
 #include <vector>
@@ -6,6 +16,7 @@
 #include <numeric>
 
 
+// Here we declare a helper function to print out a vector to the console.
 template<typename T>
 void printVector(const std::vector<T>& vector)
 {
@@ -18,13 +29,22 @@ void printVector(const std::vector<T>& vector)
 };
 
 
+// Entry point to the application.
+// In this example we are going to a median value of an array of floats.
+// In particular we want to figure out not just the median value itself,
+// but an index (or 2 indices) of elements from which the mean
+// was calculated. We get 2 indices when the array is of an odd size,
+// and to preserve symmetry we have to take 2 central elements of
+// the sorted array.
 int main()
 {
+    // Let's create an vector of floats to run our algorithm on.
     const std::vector<double> elements {
         1.2, 1.1, -0.1, -0.2, 0, 1
         };
 
     {
+        // Print out the values.
         std::cout << "elements=";
         printVector(elements);
         std::cout << std::endl;
